@@ -17,95 +17,74 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.relatospapel.ms_books_catalogue.constant.ApiConstants;
 import com.relatospapel.ms_books_catalogue.dto.request.BookCreateRequest;
 import com.relatospapel.ms_books_catalogue.dto.request.BookPatchRequest;
 import com.relatospapel.ms_books_catalogue.dto.response.BookAvailabilityResponse;
 import com.relatospapel.ms_books_catalogue.dto.response.BookResponse;
 import com.relatospapel.ms_books_catalogue.service.BookService;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Controlador REST para la gestión del catálogo de libros.
+ * Implementa operaciones CRUD completas y búsqueda avanzada.
+ * 
+ * <p>Endpoints base: {@value ApiConstants#BOOKS_PATH}
+ * <p>Versión de la API: {@value ApiConstants#API_VERSION}
+ * 
+ * @author Relatos de Papel
+ * @version 1.0.0
+ */
 @RestController
-@RequestMapping("/books")
+@RequestMapping(ApiConstants.BOOKS_PATH)
 @RequiredArgsConstructor
-@Tag(name = "Libros", description = "API para la gestión del catálogo de libros")
 public class BookController {
 
   private final BookService service;
 
-  @Operation(summary = "Crear un nuevo libro", description = "Registra un nuevo libro en el catálogo")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Libro creado exitosamente"),
-      @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
-  })
   @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
   public BookResponse create(@Valid @RequestBody BookCreateRequest req) {
     return service.create(req);
   }
 
-  @Operation(summary = "Obtener libro por ID", description = "Recupera la información de un libro específico")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Libro encontrado"),
-      @ApiResponse(responseCode = "404", description = "Libro no encontrado")
-  })
   @GetMapping("/{id}")
-  public BookResponse get(
-      @Parameter(description = "ID único del libro") @PathVariable UUID id) {
+  public BookResponse get(@PathVariable UUID id) {
     return service.getById(id);
   }
 
-  @Operation(summary = "Buscar libros", description = "Busca libros aplicando filtros opcionales")
-  @ApiResponse(responseCode = "200", description = "Lista de libros encontrados")
   @GetMapping
   public List<BookResponse> search(
-      @Parameter(description = "Filtrar por título (búsqueda parcial)") @RequestParam(required = false) String title,
-      @Parameter(description = "Filtrar por autor (búsqueda parcial)") @RequestParam(required = false) String author,
-      @Parameter(description = "Filtrar por fecha de publicación") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate publicationDate,
-      @Parameter(description = "Filtrar por ID de categoría") @RequestParam(required = false) UUID categoryId,
-      @Parameter(description = "Filtrar por ISBN exacto") @RequestParam(required = false) String isbn,
-      @Parameter(description = "Filtrar por calificación (1-5)") @RequestParam(required = false) Integer rating,
-      @Parameter(description = "Filtrar por visibilidad") @RequestParam(required = false) Boolean visible
+      @RequestParam(required = false) String title,
+      @RequestParam(required = false) String author,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate publicationDate,
+      @RequestParam(required = false) UUID categoryId,
+      @RequestParam(required = false) String isbn,
+      @RequestParam(required = false) Integer rating,
+      @RequestParam(required = false) Boolean visible
   ) {
     return service.search(title, author, publicationDate, categoryId, isbn, rating, visible);
   }
 
-  @Operation(summary = "Actualizar libro", description = "Actualiza parcialmente la información de un libro")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Libro actualizado exitosamente"),
-      @ApiResponse(responseCode = "404", description = "Libro no encontrado"),
-      @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
-  })
   @PatchMapping("/{id}")
   public BookResponse patch(
-      @Parameter(description = "ID único del libro") @PathVariable UUID id,
+      @PathVariable UUID id,
       @Valid @RequestBody BookPatchRequest req) {
     return service.patch(id, req);
   }
 
-  @Operation(summary = "Eliminar libro", description = "Elimina un libro del catálogo")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "204", description = "Libro eliminado exitosamente"),
-      @ApiResponse(responseCode = "404", description = "Libro no encontrado")
-  })
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void delete(
-      @Parameter(description = "ID único del libro") @PathVariable UUID id) {
+  public void delete(@PathVariable UUID id) {
     service.delete(id);
   }
 
-  @Operation(summary = "Verificar disponibilidad", description = "Verifica si hay stock suficiente de un libro")
-  @ApiResponse(responseCode = "200", description = "Información de disponibilidad")
   @GetMapping("/{id}/availability")
   public BookAvailabilityResponse availability(
-      @Parameter(description = "ID único del libro") @PathVariable UUID id,
-      @Parameter(description = "Cantidad requerida") @RequestParam int quantity) {
+      @PathVariable UUID id,
+      @RequestParam int quantity) {
     return service.availability(id, quantity);
   }
 }
