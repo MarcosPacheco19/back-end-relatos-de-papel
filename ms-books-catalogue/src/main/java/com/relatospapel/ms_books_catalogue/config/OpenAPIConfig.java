@@ -12,7 +12,6 @@ import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenAPIConfig {
-
   @Bean
   public OpenAPI customOpenAPI() {
     Server localServer = new Server();
@@ -20,7 +19,7 @@ public class OpenAPIConfig {
     localServer.setDescription("Servidor local - MS Books Catalogue");
 
     Server gatewayServer = new Server();
-    gatewayServer.setUrl("http://localhost:8080/catalogue");
+    gatewayServer.setUrl("http://localhost:8080");
     gatewayServer.setDescription("API Gateway - Acceso recomendado");
 
     Contact contact = new Contact();

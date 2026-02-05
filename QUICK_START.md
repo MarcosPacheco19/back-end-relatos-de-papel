@@ -46,16 +46,6 @@ mvn spring-boot:run
 
 Esperar a ver: `Started ApiGatewayApplication`
 
-### 3️⃣ Acceder a Swagger
-
-**🌐 URL Principal:**
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
----
-
 ## 📝 Ejemplos de Uso
 
 ### Crear una Categoría
@@ -98,13 +88,12 @@ curl "http://localhost:8080/catalogue/books?rating=5"
 
 ## 🔗 URLs Importantes
 
-| Servicio               | URL                                   | Descripción                      |
-| ---------------------- | ------------------------------------- | -------------------------------- |
-| **Swagger UI**         | http://localhost:8080/swagger-ui.html | Documentación completa de la API |
-| **Eureka**             | http://localhost:8761                 | Dashboard de servicios           |
-| **API Gateway**        | http://localhost:8080                 | Punto de entrada principal       |
-| **Catálogo (directo)** | http://localhost:8081                 | Acceso directo al microservicio  |
-| **Pagos (directo)**    | http://localhost:8082                 | Acceso directo al microservicio  |
+| Servicio               | URL                   | Descripción                     |
+| ---------------------- | --------------------- | ------------------------------- |
+| **Eureka**             | http://localhost:8761 | Dashboard de servicios          |
+| **API Gateway**        | http://localhost:8080 | Punto de entrada principal      |
+| **Catálogo (directo)** | http://localhost:8081 | Acceso directo al microservicio |
+| **Pagos (directo)**    | http://localhost:8082 | Acceso directo al microservicio |
 
 ---
 

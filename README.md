@@ -19,7 +19,6 @@ El proyecto está compuesto por los siguientes servicios:
 - MySQL 8.4 (Catálogo)
 - PostgreSQL 16 (Pagos)
 - Docker & Docker Compose
-- Swagger/OpenAPI 3.0
 
 ## 📦 Requisitos Previos
 
@@ -135,22 +134,7 @@ mvn spring-boot:run
 
 Esperar hasta ver: `Started ApiGatewayApplication`
 
-## 🔍 Acceso a la Documentación API
-
-### 📚 Swagger UI Centralizado (Recomendado)
-
-Acceder a toda la documentación desde el API Gateway:
-
-**http://localhost:8080/swagger-ui.html**
-
-Esto mostrará la documentación de todos los microservicios en un solo lugar.
-
-### 📚 Swagger UI por Microservicio (Acceso Directo)
-
-- **MS Books Catalogue:** http://localhost:8081/swagger-ui.html
-- **MS Books Payments:** http://localhost:8082/swagger-ui.html
-
-### 🌐 Endpoints Principales
+## 🌐 Endpoints Principales
 
 Todas las peticiones deben pasar por el API Gateway (puerto 8080):
 
@@ -350,7 +334,6 @@ Todos los mensajes de error y validación están en español:
 
 - **Eureka:** http://localhost:8761
 - **API Gateway:** http://localhost:8080
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
 - **API Gateway Health:** http://localhost:8080/actuator/health
 
 ---
