@@ -1,12 +1,12 @@
 package com.relatospapel.ms_books_payments.entity;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.relatospapel.ms_books_payments.entity.enums.OrderStatus;
+import com.relatospapel.ms_books_payments.enums.OrderStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -40,54 +40,67 @@ import lombok.ToString;
 @Table(name = "orders")
 public class OrderEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @EqualsAndHashCode.Include
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @EqualsAndHashCode.Include
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false, foreignKey = @ForeignKey(name = "fk_order_customer"))
-    @ToString.Exclude
-    private CustomerEntity customer;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "customer_id", nullable = false, 
+              foreignKey = @ForeignKey(name = "fk_order_customer"))
+  @ToString.Exclude
+  private CustomerEntity customer;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private OrderStatus status;
+  @Column(name = "customer_id", insertable = false, updatable = false)
+  private UUID customerId;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalAmount;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private OrderStatus status;
 
-    @Column(nullable = false, length = 3)
-    private String currency;
+  @Column(nullable = false, precision = 12, scale = 2)
+  private BigDecimal totalAmount;
 
-    @Column(length = 50)
-    private String couponCodeApplied;
+  @Column(nullable = false, length = 3)
+  private String currency;
 
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+  @Column(length = 50)
+  private String couponCodeApplied;
 
-    private Instant updatedAt;
+  @Column(nullable = false, updatable = false)
+  private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    @ToString.Exclude
-    private List<OrderItemEntity> items = new ArrayList<>();
+  @Column(nullable = false)
+  private LocalDateTime updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-        updatedAt = Instant.now();
-    }
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  @ToString.Exclude
+  private List<OrderItemEntity> items = new ArrayList<>();
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  @ToString.Exclude
+  private List<PaymentEntity> payments = new ArrayList<>();
 
-    public void addItem(OrderItemEntity item) {
-        items.add(item);
-        item.setOrder(this);
-    }
+  @PrePersist
+  protected void onCreate() {
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = this.createdAt;
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  public void addItem(OrderItemEntity item) {
+    items.add(item);
+    item.setOrder(this);
+  }
+
+  public void addPayment(PaymentEntity payment) {
+    payments.add(payment);
+    payment.setOrder(this);
+  }
 }

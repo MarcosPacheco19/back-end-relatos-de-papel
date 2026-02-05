@@ -1,5 +1,6 @@
 package com.relatospapel.ms_books_payments.service.impl;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -14,53 +15,43 @@ import com.relatospapel.ms_books_payments.service.CustomerService;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Implementación del servicio de gestión de clientes.
- * Maneja la lógica de negocio relacionada con clientes.
- * 
- * @author Relatos de Papel
- * @version 1.0.0
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class CustomerServiceImpl implements CustomerService {
 
-    private final CustomerRepository customerRepository;
+    private final CustomerRepository repo;
 
     @Override
-    public CustomerResponse create(CustomerCreateRequest req) {
-        CustomerEntity customer = CustomerEntity.builder()
-                .email(req.getEmail())
-                .preferredLanguage(req.getPreferredLanguage())
+    public CustomerResponse create(CustomerCreateRequest request) {
+        // Validar que no exista el email
+        //repo.findByEmail(request.getEmail()).ifPresent(c -> {
+        //    throw new IllegalArgumentException("El email ya existe");
+        //});
+
+        CustomerEntity entity = CustomerEntity.builder()
+                .email(request.getEmail())
+                .preferredLanguage(request.getPreferredLanguage())
                 .build();
-        
-        customer = customerRepository.save(customer);
-        
-        return toResponse(customer);
+
+        entity = repo.save(entity);
+
+        return CustomerResponse.from(entity);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CustomerResponse getById(UUID id) {
-        CustomerEntity customer = customerRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Cliente no encontrado con ID: " + id));
-        
-        return toResponse(customer);
+    public CustomerResponse get(UUID id) {
+        CustomerEntity c = repo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Cliente no encontrado"));
+        return CustomerResponse.from(c);
     }
 
-    /**
-     * Convierte una entidad de cliente a un DTO de respuesta.
-     * 
-     * @param customer entidad de cliente
-     * @return DTO de respuesta con la información del cliente
-     */
-    private CustomerResponse toResponse(CustomerEntity customer) {
-        return new CustomerResponse(
-                customer.getId(),
-                customer.getEmail(),
-                customer.getPreferredLanguage(),
-                customer.getCreatedAt()
-        );
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerResponse> list() {
+        return repo.findAll().stream()
+                .map(CustomerResponse::from)
+                .toList();
     }
 }

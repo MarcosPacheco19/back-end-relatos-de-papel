@@ -1,5 +1,6 @@
 package com.relatospapel.ms_books_payments.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.relatospapel.ms_books_payments.dto.request.CustomerCreateRequest;
@@ -17,10 +18,10 @@ public interface CustomerService {
     /**
      * Crea un nuevo cliente en el sistema.
      * 
-     * @param req datos del cliente a crear
+     * @param request datos del cliente a crear
      * @return información del cliente creado
      */
-    CustomerResponse create(CustomerCreateRequest req);
+    CustomerResponse create(CustomerCreateRequest request);
     
     /**
      * Obtiene un cliente por su ID.
@@ -29,5 +30,12 @@ public interface CustomerService {
      * @return información del cliente
      * @throws com.relatospapel.ms_books_payments.exception.NotFoundException si el cliente no existe
      */
-    CustomerResponse getById(UUID id);
+    CustomerResponse get(UUID id);
+    
+    /**
+     * Lista todos los clientes del sistema.
+     * 
+     * @return lista de clientes
+     */
+    List<CustomerResponse> list();
 }

@@ -1,14 +1,27 @@
 package com.relatospapel.ms_books_payments.dto.response;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-import lombok.Value;
+import com.relatospapel.ms_books_payments.entity.CustomerEntity;
 
-@Value
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
 public class CustomerResponse {
-    UUID id;
-    String email;
-    String preferredLanguage;
-    Instant createdAt;
+    private UUID id;
+    private String email;
+    private String preferredLanguage;
+    private LocalDateTime createdAt;
+
+    public static CustomerResponse from(CustomerEntity entity) {
+        return CustomerResponse.builder()
+                .id(entity.getId())
+                .email(entity.getEmail())
+                .preferredLanguage(entity.getPreferredLanguage())
+                .createdAt(entity.getCreatedAt())
+                .build();
+    }
 }

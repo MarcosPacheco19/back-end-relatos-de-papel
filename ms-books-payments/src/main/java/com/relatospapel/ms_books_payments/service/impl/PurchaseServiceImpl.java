@@ -1,6 +1,8 @@
 package com.relatospapel.ms_books_payments.service.impl;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +17,8 @@ import com.relatospapel.ms_books_payments.dto.response.PurchaseResponse;
 import com.relatospapel.ms_books_payments.entity.CustomerEntity;
 import com.relatospapel.ms_books_payments.entity.OrderEntity;
 import com.relatospapel.ms_books_payments.entity.OrderItemEntity;
-import com.relatospapel.ms_books_payments.entity.enums.OrderStatus;
+import com.relatospapel.ms_books_payments.enums.OrderStatus;
+import com.relatospapel.ms_books_payments.enums.BookFormat;
 import com.relatospapel.ms_books_payments.exception.BookNotFoundException;
 import com.relatospapel.ms_books_payments.exception.InsufficientStockException;
 import com.relatospapel.ms_books_payments.exception.NotFoundException;
@@ -75,14 +78,14 @@ public class PurchaseServiceImpl implements PurchaseService {
                 throw new InsufficientStockException("Libro no disponible: " + item.getBookId() +
                         ". Razón: " + availability.getReason());
             }
-            BigDecimal unitPrice = new java.math.BigDecimal("29.99");
-            BigDecimal lineTotal = unitPrice.multiply(new java.math.BigDecimal(item.getQuantity()));
+            BigDecimal unitPrice = new BigDecimal("29.99");
+            BigDecimal lineTotal = unitPrice.multiply(new BigDecimal(item.getQuantity()));
             totalAmount = totalAmount.add(lineTotal);
             OrderItemEntity orderItem = OrderItemEntity.builder()
                     .bookIdRef(item.getBookId())
                     .isbnRef("N/D")
                     .titleSnapshot("Instantánea del título del libro")
-                    .imageUrlSnapshot("FÍSICO")
+                    .formatSnapshot(BookFormat.PHYSICAL)
                     .quantity(item.getQuantity())
                     .unitPrice(unitPrice)
                     .lineTotal(lineTotal)
@@ -107,7 +110,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         return PurchaseResponse.builder()
                 .orderId(order.getId())
                 .status(order.getStatus().name())
-                .createdAt(order.getCreatedAt())
+                .createdAt(ZonedDateTime.of(order.getCreatedAt(), ZoneId.systemDefault()).toInstant())
                 .items(responseItems)
                 .build();
     }
@@ -129,7 +132,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         return PurchaseResponse.builder()
                 .orderId(order.getId())
                 .status(order.getStatus().name())
-                .createdAt(order.getCreatedAt())
+                .createdAt(ZonedDateTime.of(order.getCreatedAt(), ZoneId.systemDefault()).toInstant())
                 .items(items)
                 .build();
     }
