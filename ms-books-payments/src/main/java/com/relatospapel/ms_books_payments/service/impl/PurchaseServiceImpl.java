@@ -1,5 +1,6 @@
 package com.relatospapel.ms_books_payments.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +40,6 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     public PurchaseResponse create(PurchaseCreateRequest req) {
-        // 1. Buscar o crear cliente
         CustomerEntity customer = customerRepository.findByEmail(req.getBuyerEmail())
                 .orElseGet(() -> {
                     CustomerEntity newCustomer = CustomerEntity.builder()
@@ -47,84 +47,63 @@ public class PurchaseServiceImpl implements PurchaseService {
                             .build();
                     return customerRepository.save(newCustomer);
                 });
-
-        // 2. Validar cada item con el catalogo
         List<PurchaseResponse.Item> responseItems = new ArrayList<>();
         List<OrderItemEntity> orderItems = new ArrayList<>();
-        java.math.BigDecimal totalAmount = java.math.BigDecimal.ZERO;
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (PurchaseCreateRequest.Item item : req.getItems()) {
             BookAvailabilityResponse availability;
-            
             try {
                 availability = catalogueClient.availability(item.getBookId(), item.getQuantity());
             } catch (FeignException.NotFound e) {
-                log.error("Book not found in catalogue: {}", item.getBookId(), e);
-                throw new BookNotFoundException("Book not found: " + item.getBookId());
+                log.error("Libro no encontrado en el catálogo: {}", item.getBookId(), e);
+                throw new BookNotFoundException("Libro no encontrado: " + item.getBookId());
             } catch (FeignException.Conflict e) {
-                log.error("Conflict validating book availability: {}", item.getBookId(), e);
-                throw new InsufficientStockException("Book not available: " + item.getBookId());
+                log.error("Conflicto al validar disponibilidad del libro: {}", item.getBookId(), e);
+                throw new InsufficientStockException("Libro no disponible: " + item.getBookId());
             } catch (FeignException.ServiceUnavailable | FeignException.InternalServerError e) {
-                log.error("Catalogue service unavailable", e);
-                throw new UpstreamServiceException("Catalogue service is temporarily unavailable. Please try again later.");
+                log.error("Servicio de catálogo no disponible", e);
+                throw new UpstreamServiceException("El servicio de catálogo está temporalmente no disponible. Por favor, inténtelo más tarde.");
             } catch (FeignException e) {
-                log.error("Error communicating with catalogue service", e);
-                throw new UpstreamServiceException("Error validating book availability. Please try again later.");
+                log.error("Error al comunicarse con el servicio de catálogo", e);
+                throw new UpstreamServiceException("Error al validar la disponibilidad del libro. Por favor, inténtelo más tarde.");
             }
-
-            // Validar que el libro existe
             if (!availability.isExists()) {
-                throw new BookNotFoundException("Book not found: " + item.getBookId());
+                throw new BookNotFoundException("Libro no encontrado: " + item.getBookId());
             }
-
-            // Validar que el libro esta disponible
             if (!availability.isAvailable()) {
-                throw new InsufficientStockException("Book not available: " + item.getBookId() +
-                        ". Reason: " + availability.getReason());
+                throw new InsufficientStockException("Libro no disponible: " + item.getBookId() +
+                        ". Razón: " + availability.getReason());
             }
-
-            // Calcular precios (precio hardcoded temporalmente - idealmente viene del catalogo)
-            java.math.BigDecimal unitPrice = new java.math.BigDecimal("29.99");
-            java.math.BigDecimal lineTotal = unitPrice.multiply(new java.math.BigDecimal(item.getQuantity()));
+            BigDecimal unitPrice = new java.math.BigDecimal("29.99");
+            BigDecimal lineTotal = unitPrice.multiply(new java.math.BigDecimal(item.getQuantity()));
             totalAmount = totalAmount.add(lineTotal);
-
-            // Crear item de orden con snapshot de datos
             OrderItemEntity orderItem = OrderItemEntity.builder()
                     .bookIdRef(item.getBookId())
-                    .isbnRef("N/A")
-                    .titleSnapshot("Book Title Snapshot")
-                    .imageUrlSnapshot("PHYSICAL")
+                    .isbnRef("N/D")
+                    .titleSnapshot("Instantánea del título del libro")
+                    .imageUrlSnapshot("FÍSICO")
                     .quantity(item.getQuantity())
                     .unitPrice(unitPrice)
                     .lineTotal(lineTotal)
                     .build();
             orderItems.add(orderItem);
-
-            // Crear item de respuesta
             responseItems.add(PurchaseResponse.Item.builder()
                     .bookId(item.getBookId())
                     .quantity(item.getQuantity())
                     .validationReason("OK")
                     .build());
         }
-
-        // 3. Crear orden
         OrderEntity order = OrderEntity.builder()
                 .customer(customer)
                 .status(OrderStatus.CREATED)
                 .totalAmount(totalAmount)
                 .currency("USD")
                 .build();
-
-        // 4. Asociar items a la orden
         for (OrderItemEntity item : orderItems) {
             order.addItem(item);
         }
-
-        // 5. Guardar orden con cascade
         order = orderRepository.save(order);
-
-        // 6. Retornar respuesta
         return PurchaseResponse.builder()
                 .orderId(order.getId())
                 .status(order.getStatus().name())
@@ -137,13 +116,13 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Transactional(readOnly = true)
     public PurchaseResponse getById(UUID id) {
         OrderEntity order = orderRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Order not found: " + id));
+                .orElseThrow(() -> new NotFoundException("Orden no encontrada: " + id));
 
         List<PurchaseResponse.Item> items = order.getItems().stream()
                 .map(item -> PurchaseResponse.Item.builder()
                         .bookId(item.getBookIdRef())
                         .quantity(item.getQuantity())
-                        .validationReason("N/A")
+                        .validationReason("N/D")
                         .build())
                 .toList();
 

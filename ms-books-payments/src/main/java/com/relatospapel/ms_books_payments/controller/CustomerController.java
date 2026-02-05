@@ -13,48 +13,48 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.relatospapel.ms_books_payments.dto.request.CustomerCreateRequest;
 import com.relatospapel.ms_books_payments.dto.response.CustomerResponse;
-import com.relatospapel.ms_books_payments.entity.CustomerEntity;
-import com.relatospapel.ms_books_payments.exception.NotFoundException;
-import com.relatospapel.ms_books_payments.repository.CustomerRepository;
+import com.relatospapel.ms_books_payments.service.CustomerService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Controlador REST para la gestión de clientes.
+ * Implementa operaciones de creación y consulta de clientes.
+ * 
+ * <p>Endpoints base: /api/v1/payments/customers
+ * <p>Versión de la API: v1
+ * 
+ * @author Relatos de Papel
+ * @version 1.0.0
+ */
 @RestController
 @RequestMapping("/api/v1/payments/customers")
 @RequiredArgsConstructor
 public class CustomerController {
 
-    private final CustomerRepository customerRepository;
+    private final CustomerService service;
 
+    /**
+     * Crea un nuevo cliente en el sistema.
+     * 
+     * @param req datos del cliente a crear
+     * @return información del cliente creado
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CustomerResponse create(@Valid @RequestBody CustomerCreateRequest req) {
-        CustomerEntity customer = CustomerEntity.builder()
-                .email(req.getEmail())
-                .preferredLanguage(req.getPreferredLanguage())
-                .build();
-        
-        customer = customerRepository.save(customer);
-        
-        return new CustomerResponse(
-                customer.getId(),
-                customer.getEmail(),
-                customer.getPreferredLanguage(),
-                customer.getCreatedAt()
-        );
+        return service.create(req);
     }
 
+    /**
+     * Obtiene la información de un cliente por su ID.
+     * 
+     * @param id identificador único del cliente
+     * @return información del cliente
+     */
     @GetMapping("/{id}")
     public CustomerResponse getById(@PathVariable UUID id) {
-        CustomerEntity customer = customerRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Customer no encontrado con ID: " + id));
-        
-        return new CustomerResponse(
-                customer.getId(),
-                customer.getEmail(),
-                customer.getPreferredLanguage(),
-                customer.getCreatedAt()
-        );
+        return service.getById(id);
     }
 }

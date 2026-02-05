@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.relatospapel.ms_books_catalogue.constant.ApiConstants;
 import com.relatospapel.ms_books_catalogue.dto.request.BookCreateRequest;
 import com.relatospapel.ms_books_catalogue.dto.request.BookPatchRequest;
 import com.relatospapel.ms_books_catalogue.dto.response.BookAvailabilityResponse;
@@ -31,14 +30,14 @@ import lombok.RequiredArgsConstructor;
  * Controlador REST para la gestión del catálogo de libros.
  * Implementa operaciones CRUD completas y búsqueda avanzada.
  * 
- * <p>Endpoints base: {@value ApiConstants#BOOKS_PATH}
- * <p>Versión de la API: {@value ApiConstants#API_VERSION}
+ * <p>Endpoints base: /api/v1/catalogue/books
+ * <p>Versión de la API: v1
  * 
  * @author Relatos de Papel
  * @version 1.0.0
  */
 @RestController
-@RequestMapping(ApiConstants.BOOKS_PATH)
+@RequestMapping("/api/v1/catalogue/books")
 @RequiredArgsConstructor
 public class BookController {
 
