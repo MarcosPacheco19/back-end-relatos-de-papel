@@ -3,6 +3,7 @@ package com.relatospapel.ms_books_catalogue.dto.request;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +12,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
+@Schema(description = "Datos para crear un libro en catálogo")
 public class BookCreateRequest {
   @NotBlank(message = "El título es obligatorio")
   @Size(max = 200, message = "El título no puede exceder 200 caracteres")
@@ -25,6 +27,7 @@ public class BookCreateRequest {
 
   @NotBlank(message = "El ISBN es obligatorio")
   @Size(max = 20, message = "El ISBN no puede exceder 20 caracteres")
+  @Schema(description = "ISBN del libro", example = "978-3-16-148410-0")
   private String isbn;
 
   @NotNull(message = "La calificación es obligatoria")
@@ -33,6 +36,7 @@ public class BookCreateRequest {
   private Integer rating;
 
   @NotNull(message = "El campo visible es obligatorio")
+  @Schema(description = "Si el libro es visible en catálogo")
   private Boolean visible;
 
   @NotNull(message = "El stock es obligatorio")

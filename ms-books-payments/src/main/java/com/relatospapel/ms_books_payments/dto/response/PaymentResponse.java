@@ -8,20 +8,37 @@ import com.relatospapel.ms_books_payments.entity.PaymentEntity;
 import com.relatospapel.ms_books_payments.enums.PaymentMethod;
 import com.relatospapel.ms_books_payments.enums.PaymentStatus;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
+@Schema(description = "Respuesta con información del pago")
 public class PaymentResponse {
 
+  @Schema(description = "Identificador del pago")
   private UUID id;
+
+  @Schema(description = "Identificador del pedido asociado")
   private UUID orderId;
+
+  @Schema(description = "Método de pago")
   private PaymentMethod method;
+
+  @Schema(description = "Estado del pago")
   private PaymentStatus status;
+
+  @Schema(description = "Importe pagado")
   private BigDecimal amount;
+
+  @Schema(description = "Moneda")
   private String currency;
+
+  @Schema(description = "ID de transacción del proveedor")
   private String providerTxId;
+
+  @Schema(description = "Fecha de creación del pago")
   private LocalDateTime createdAt;
 
   public static PaymentResponse from(PaymentEntity payment) {

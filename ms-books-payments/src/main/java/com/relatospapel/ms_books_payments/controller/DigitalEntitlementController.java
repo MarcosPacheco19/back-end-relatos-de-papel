@@ -16,6 +16,11 @@ import com.relatospapel.ms_books_payments.dto.request.DigitalEntitlementCreateRe
 import com.relatospapel.ms_books_payments.dto.response.DigitalEntitlementResponse;
 import com.relatospapel.ms_books_payments.service.DigitalEntitlementService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -27,12 +32,26 @@ public class DigitalEntitlementController {
     private final DigitalEntitlementService service;
 
     @PostMapping
+        @Operation(summary = "Crear derecho digital")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Derecho digital creado",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = DigitalEntitlementResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+        })
     public ResponseEntity<DigitalEntitlementResponse> create(@Valid @RequestBody DigitalEntitlementCreateRequest request) {
         DigitalEntitlementResponse response = service.create(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}/activate")
+    @PostMapping("/{id}/activate")//
+        @Operation(summary = "Activar derecho digital")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Derecho activado",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = DigitalEntitlementResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Derecho no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+        })
     public ResponseEntity<DigitalEntitlementResponse> activate(@PathVariable("id") UUID entitlementId) {
         DigitalEntitlementResponse response = service.activate(entitlementId);
         return ResponseEntity.ok(response);
@@ -45,6 +64,13 @@ public class DigitalEntitlementController {
     }
 
     @GetMapping("/customer/{customerId}")
+    @Operation(summary = "Listar derechos por cliente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de derechos digitales",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = DigitalEntitlementResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+    })
     public ResponseEntity<List<DigitalEntitlementResponse>> listByCustomer(@PathVariable UUID customerId) {
         List<DigitalEntitlementResponse> response = service.listByCustomer(customerId);
         return ResponseEntity.ok(response);

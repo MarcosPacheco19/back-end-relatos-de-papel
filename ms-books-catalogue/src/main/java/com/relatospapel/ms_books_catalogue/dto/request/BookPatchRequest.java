@@ -3,12 +3,14 @@ package com.relatospapel.ms_books_catalogue.dto.request;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
+@Schema(description = "Datos para actualizar parcialmente un libro")
 public class BookPatchRequest {
   @Size(max = 200, message = "El título no puede exceder 200 caracteres")
   private String title;

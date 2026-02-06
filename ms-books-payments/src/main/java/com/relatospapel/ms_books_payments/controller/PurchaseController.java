@@ -15,6 +15,11 @@ import com.relatospapel.ms_books_payments.dto.request.PurchaseCreateRequest;
 import com.relatospapel.ms_books_payments.dto.response.PurchaseResponse;
 import com.relatospapel.ms_books_payments.service.PurchaseService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -37,11 +42,25 @@ public class PurchaseController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+        @Operation(summary = "Crear compra")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Compra creada",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = PurchaseResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+        })
     public PurchaseResponse create(@Valid @RequestBody PurchaseCreateRequest req) {
         return service.create(req);
     }
 
     @GetMapping("/{id}")
+        @Operation(summary = "Obtener compra por id")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Compra encontrada",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = PurchaseResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Compra no encontrada", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+        })
     public PurchaseResponse get(@PathVariable UUID id) {
         return service.getById(id);
     }

@@ -23,6 +23,11 @@ import com.relatospapel.ms_books_catalogue.dto.response.BookAvailabilityResponse
 import com.relatospapel.ms_books_catalogue.dto.response.BookResponse;
 import com.relatospapel.ms_books_catalogue.service.BookService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -45,11 +50,25 @@ public class BookController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Crear libro en catálogo")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "201", description = "Libro creado",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookResponse.class))),
+      @ApiResponse(responseCode = "400", description = "Solicitud inválida", content = @Content),
+      @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+  })
   public BookResponse create(@Valid @RequestBody BookCreateRequest req) {
     return service.create(req);
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Obtener libro por id")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Libro encontrado",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookResponse.class))),
+      @ApiResponse(responseCode = "404", description = "Libro no encontrado", content = @Content),
+      @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+  })
   public BookResponse get(@PathVariable UUID id) {
     return service.getById(id);
   }
@@ -68,6 +87,14 @@ public class BookController {
   }
 
   @PatchMapping("/{id}")
+  @Operation(summary = "Actualizar parcialmente libro")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Libro actualizado",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookResponse.class))),
+      @ApiResponse(responseCode = "400", description = "Solicitud inválida", content = @Content),
+      @ApiResponse(responseCode = "404", description = "Libro no encontrado", content = @Content),
+      @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+  })
   public BookResponse patch(
       @PathVariable UUID id,
       @Valid @RequestBody BookPatchRequest req) {
@@ -81,6 +108,13 @@ public class BookController {
   }
 
   @GetMapping("/{id}/availability")
+  @Operation(summary = "Comprobar disponibilidad de un libro")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Disponibilidad calculada",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookAvailabilityResponse.class))),
+      @ApiResponse(responseCode = "404", description = "Libro no encontrado", content = @Content),
+      @ApiResponse(responseCode = "500", description = "Error interno", content = @Content)
+  })
   public BookAvailabilityResponse availability(
       @PathVariable UUID id,
       @RequestParam int quantity) {
