@@ -15,7 +15,8 @@ import com.relatospapel.ms_books_catalogue.entity.BookEntity;
 import com.relatospapel.ms_books_catalogue.exception.NotFoundException;
 import com.relatospapel.ms_books_catalogue.repository.BookRepository;
 import com.relatospapel.ms_books_catalogue.repository.CategoryRepository;
-import com.relatospapel.ms_books_catalogue.repository.spec.BookSpecifications;
+import com.relatospapel.ms_books_catalogue.search.BookOpenSearchService;  // CAMBIO
+import com.relatospapel.ms_books_catalogue.search.BookSearchMapper;       // CAMBIO
 import com.relatospapel.ms_books_catalogue.service.BookService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class BookServiceImpl implements BookService {
+
   private final BookRepository bookRepo;
   private final CategoryRepository categoryRepo;
+
+  // CAMBIO: OpenSearch se usa para sincronizar y para realizar la búsqueda (único motor)
+  private final BookOpenSearchService os;
 
   @Override
   public BookResponse create(BookCreateRequest req) {
@@ -45,7 +50,12 @@ public class BookServiceImpl implements BookService {
       book.setCategory(cat);
     }
 
-    return toResponse(bookRepo.save(book));
+    BookResponse resp = toResponse(bookRepo.save(book));
+
+    // CAMBIO: indexar en OpenSearch al crear
+    os.upsert(BookSearchMapper.toDocument(resp));
+
+    return resp;
   }
 
   @Override
@@ -57,10 +67,21 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<BookResponse> search(String title, String author, LocalDate publicationDate,
+  public List<BookResponse> search(String q, String title, String author, LocalDate publicationDate,
                                    UUID categoryId, String isbn, Integer rating, Boolean visible) {
-    var spec = BookSpecifications.byFilters(title, author, publicationDate, categoryId, isbn, rating, visible);
-    return bookRepo.findAll(spec).stream().map(this::toResponse).toList();
+    // CAMBIO: búsqueda SOLO por OpenSearch (se eliminó BookSpecifications)
+    var docs = os.search(
+        q,
+        title,
+        author,
+        publicationDate,
+        categoryId != null ? categoryId.toString() : null,
+        isbn,
+        rating,
+        visible
+    );
+
+    return docs.stream().map(BookSearchMapper::toResponse).toList();
   }
 
   @Override
@@ -81,13 +102,21 @@ public class BookServiceImpl implements BookService {
       b.setCategory(cat);
     }
 
-    return toResponse(bookRepo.save(b));
+    BookResponse resp = toResponse(bookRepo.save(b));
+
+    // CAMBIO: re-indexar en OpenSearch al modificar
+    os.upsert(BookSearchMapper.toDocument(resp));
+
+    return resp;
   }
 
   @Override
   public void delete(UUID id) {
     if (!bookRepo.existsById(id)) throw new NotFoundException("Libro no encontrado");
     bookRepo.deleteById(id);
+
+    // CAMBIO: borrar del índice OpenSearch al eliminar
+    os.deleteById(id.toString());
   }
 
   @Override

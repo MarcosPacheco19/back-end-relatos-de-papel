@@ -1,27 +1,9 @@
 services:
-  mysql_catalogue:
-    image: mysql:8.4
-    container_name: mysql_catalogue
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: relatos_catalogue
-      MYSQL_USER: relatos
-      MYSQL_PASSWORD: relatos
-    ports:
-      - "3307:3306"
-    volumes:
-      - ./scripts/mysql-init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  postgres_payments:
+  postgres_database:
     image: postgres:16
-    container_name: postgres_payments
+    container_name: postgres_database
     environment:
-      POSTGRES_DB: relatos_payments
+      POSTGRES_DB: relatos_database
       POSTGRES_USER: relatos
       POSTGRES_PASSWORD: relatos
     ports:
@@ -29,7 +11,7 @@ services:
     volumes:
       - ./scripts/postgres-init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U relatos -d relatos_payments"]
+      test: ["CMD-SHELL", "pg_isready -U relatos -d relatos_database"]
       interval: 10s
       timeout: 5s
       retries: 10

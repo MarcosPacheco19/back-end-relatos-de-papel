@@ -21,6 +21,7 @@ import com.relatospapel.ms_books_catalogue.dto.request.BookCreateRequest;
 import com.relatospapel.ms_books_catalogue.dto.request.BookPatchRequest;
 import com.relatospapel.ms_books_catalogue.dto.response.BookAvailabilityResponse;
 import com.relatospapel.ms_books_catalogue.dto.response.BookResponse;
+import com.relatospapel.ms_books_catalogue.search.BookOpenSearchService; // CAMBIO: OpenSearch para suggest/facets
 import com.relatospapel.ms_books_catalogue.service.BookService;
 
 import jakarta.validation.Valid;
@@ -43,6 +44,9 @@ public class BookController {
 
   private final BookService service;
 
+  // CAMBIO: se inyecta OpenSearchService SOLO para endpoints adicionales (autocomplete y facets)
+  private final BookOpenSearchService os;
+
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public BookResponse create(@Valid @RequestBody BookCreateRequest req) {
@@ -56,6 +60,7 @@ public class BookController {
 
   @GetMapping
   public List<BookResponse> search(
+      @RequestParam(required = false) String q,
       @RequestParam(required = false) String title,
       @RequestParam(required = false) String author,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate publicationDate,
@@ -64,7 +69,36 @@ public class BookController {
       @RequestParam(required = false) Integer rating,
       @RequestParam(required = false) Boolean visible
   ) {
-    return service.search(title, author, publicationDate, categoryId, isbn, rating, visible);
+    // CAMBIO: aunque el controller no cambia, internamente service.search(...) ahora consulta OpenSearch (no JPA)
+    return service.search(q,title, author, publicationDate, categoryId, isbn, rating, visible);
+  }
+
+  /**
+   * Endpoint de sugerencias/autocompletado basado en OpenSearch (search_as_you_type).
+   *
+   * <p>Ejemplo: /api/v1/catalogue/books/suggest?prefix=har
+   */
+  @GetMapping("/suggest")
+  public List<String> suggest(
+      @RequestParam String prefix,
+      @RequestParam(required = false) Boolean visible
+  ) {
+    // CAMBIO: autocomplete para cumplir rúbrica (search_as_you_type)
+    return os.suggestTitle(prefix, visible);
+  }
+
+  /**
+   * Endpoint de facets/agregaciones para filtros (por ejemplo, por categoría).
+   *
+   * <p>Ejemplo: /api/v1/catalogue/books/facets?q=harry&visible=true
+   */
+  @GetMapping("/facets")
+  public BookOpenSearchService.FacetResponse facets(
+      @RequestParam(required = false) String q,
+      @RequestParam(required = false) Boolean visible
+  ) {
+    // CAMBIO: facets para cumplir rúbrica (aggs/terms)
+    return os.searchWithCategoryFacets(q, visible);
   }
 
   @PatchMapping("/{id}")
