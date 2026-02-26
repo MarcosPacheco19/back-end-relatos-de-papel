@@ -1,4 +1,4 @@
-package com.relatospapel.ms_books_catalogue.config;
+package com.relatospapel.api_gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,4 +20,3 @@ public class WebConfig {
         };
     }
 }
-
